@@ -1,7 +1,6 @@
 'use client'
 
 import FallingPetals from './FallingPetals'
-import MusicToggle from './MusicToggle'
 import PolaroidGallery from './PolaroidGallery'
 import TypewriterMessage from './TypewriterMessage'
 import HeartBurst from './HeartBurst'
@@ -10,7 +9,6 @@ export default function MainContent() {
   return (
     <div className="min-h-screen w-full relative">
       <FallingPetals />
-      <MusicToggle />
 
       <div className="max-w-md mx-auto px-5 py-12 relative z-20">
         {/* Header */}

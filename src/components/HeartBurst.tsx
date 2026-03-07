@@ -20,6 +20,8 @@ export default function HeartBurst() {
   const [clickCount, setClickCount] = useState(0)
 
   const triggerBurst = useCallback(() => {
+    if (clickCount >= 3) return // No more clicks after 3rd
+
     const newHearts: HeartParticle[] = Array.from({ length: 18 }, (_, i) => ({
       id: Date.now() + i,
       x: (Math.random() - 0.5) * 250,
@@ -35,7 +37,7 @@ export default function HeartBurst() {
     setTimeout(() => {
       setHearts(prev => prev.filter(h => !newHearts.find(n => n.id === h.id)))
     }, 2000)
-  }, [])
+  }, [clickCount])
 
   return (
     <div className="flex flex-col items-center relative mb-8">
@@ -83,27 +85,53 @@ export default function HeartBurst() {
       >
         <span className="flex items-center gap-2">
           <Heart size={18} className="fill-white" />
-          Chạm vào anh
+          Chạm vào đây
           <Heart size={18} className="fill-white" />
         </span>
       </motion.button>
 
-      {/* Click response */}
+      {/* Click response messages */}
       <AnimatePresence>
-        {clickCount > 0 && (
-          <motion.p
-            key={clickCount}
-            className="mt-4 text-sm text-rose-500/70 font-serif italic"
+        {clickCount >= 1 && (
+          <motion.div
+            key={`response-${clickCount}`}
+            className="mt-4 text-center"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
           >
-            {clickCount === 1 && '💕 Em là tất cả...'}
-            {clickCount === 2 && '💗 Yêu em nhiều lắm!'}
-            {clickCount === 3 && '💖 Mãi bên em nhé...'}
-            {clickCount >= 4 && '💝 Haha, em thích chạm lắm ha! 💝'}
-          </motion.p>
+            {/* Main message */}
+            <motion.p
+              className="text-sm text-rose-500/70 font-serif italic"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              {clickCount === 1 && '💕 Em từng là tất cả...'}
+              {clickCount === 2 && '💗 Nhưng giờ thì...'}
+              {clickCount >= 3 && '💖 Không còn là gì nữa rồi!, disgusting!'}
+            </motion.p>
+
+            {/* Floating "chạm lần nữa đi" hint - only for click 1 and 2 */}
+            {clickCount < 3 && (
+              <motion.p
+                className="mt-3 text-xs text-rose-400/50 font-serif tracking-wider"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{
+                  opacity: [0, 1, 1, 0.7],
+                  y: [15, 0, -3, -5],
+                }}
+                transition={{
+                  duration: 2.5,
+                  ease: 'easeInOut',
+                  repeat: Infinity,
+                  repeatType: 'reverse',
+                }}
+              >
+                ✧ chạm lần nữa đi ✧
+              </motion.p>
+            )}
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

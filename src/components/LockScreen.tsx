@@ -9,13 +9,14 @@ const PIN_LENGTH = 4
 
 interface LockScreenProps {
   onUnlock: () => void
+  onFirstInteraction?: () => void
 }
 
 function Star({ style }: { style: React.CSSProperties }) {
   return <div className="star" style={style} />
 }
 
-export default function LockScreen({ onUnlock }: LockScreenProps) {
+export default function LockScreen({ onUnlock, onFirstInteraction }: LockScreenProps) {
   const [pin, setPin] = useState('')
   const [isShaking, setIsShaking] = useState(false)
   const [isError, setIsError] = useState(false)
@@ -36,6 +37,9 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
 
   const handlePress = useCallback((digit: string) => {
     if (pin.length >= PIN_LENGTH) return
+
+    // Start music on first keypad press
+    if (onFirstInteraction) onFirstInteraction()
 
     const newPin = pin + digit
     setPin(newPin)
@@ -151,7 +155,7 @@ export default function LockScreen({ onUnlock }: LockScreenProps) {
         animate={{ opacity: 1 }}
         transition={{ delay: 2, duration: 1 }}
       >
-        ✧ gợi ý: ngày đặc biệt ✧
+        ✧ gợi ý: 0803 ✧
       </motion.p>
     </div>
   )

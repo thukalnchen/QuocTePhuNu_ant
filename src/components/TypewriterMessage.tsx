@@ -1,15 +1,18 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
 
 const message =
-  'Chúc em một ngày 8/3 thật dịu dàng. Bầu trời này, những bông hoa này là dành cho em. Hãy luôn mỉm cười như những vì sao lấp lánh nhé.'
+  'chúc em 3 đừng, 3 không, 3 nhớ\n\nđừng quá khắt khe với bản thân\nđừng hoài nghi chính mình và đừng từ chối tui  :>>\n\nkhông buồn nhiều quá, không áp lực quá và không một mình gánh cả thế giới nữa\n\nnhớ giữ sức khỏe, nhớ cười nhiều hơn và nhớ là có một người đáng yêu luôn chờ em'
+
+const replacementText = 'Nhưng giờ nó không dành cho m nữa rồi'
 
 export default function TypewriterMessage() {
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
+  const [phase, setPhase] = useState<'typing' | 'showing' | 'strikethrough' | 'fading' | 'replaced'>('typing')
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, amount: 0.5 })
 
@@ -30,12 +33,28 @@ export default function TypewriterMessage() {
         index++
       } else {
         setIsTyping(false)
+        setPhase('showing')
         clearInterval(interval)
       }
     }, 60)
 
     return () => clearInterval(interval)
   }, [isTyping])
+
+  // After 20s of showing the full message, start strikethrough
+  useEffect(() => {
+    if (phase !== 'showing') return
+
+    const t1 = setTimeout(() => setPhase('strikethrough'), 20000)
+    const t2 = setTimeout(() => setPhase('fading'), 21500)
+    const t3 = setTimeout(() => setPhase('replaced'), 22500)
+
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+    }
+  }, [phase])
 
   return (
     <motion.div
@@ -49,10 +68,43 @@ export default function TypewriterMessage() {
       <div className="text-center mb-6">
         <span className="text-3xl">💌</span>
       </div>
-      <p className="font-serif text-lg text-rose-800/80 leading-relaxed text-center italic">
-        &ldquo;{displayedText}&rdquo;
-        {isTyping && <span className="typewriter-cursor" />}
-      </p>
+
+      <AnimatePresence mode="wait">
+        {phase !== 'replaced' ? (
+          <motion.div
+            key="original"
+            animate={{
+              opacity: phase === 'fading' ? 0 : 1,
+              x: phase === 'fading' ? 30 : 0,
+              filter: phase === 'fading' ? 'blur(4px)' : 'blur(0px)',
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
+          >
+            <p
+              className="font-serif text-lg text-rose-800/80 leading-relaxed text-center italic whitespace-pre-line transition-all duration-700"
+              style={{
+                textDecoration: phase === 'strikethrough' || phase === 'fading' ? 'line-through' : 'none',
+                textDecorationColor: 'rgba(244, 114, 182, 0.8)',
+                textDecorationThickness: '2px',
+              }}
+            >
+              &ldquo;{displayedText}&rdquo;
+              {isTyping && <span className="typewriter-cursor" />}
+            </p>
+          </motion.div>
+        ) : (
+          <motion.p
+            key="replacement"
+            className="font-serif text-lg text-rose-600/90 leading-relaxed text-center italic"
+            initial={{ opacity: 0, y: 15, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+          >
+            &ldquo;{replacementText}&rdquo;
+          </motion.p>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }

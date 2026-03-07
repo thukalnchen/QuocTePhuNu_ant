@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import LockScreen from '@/components/LockScreen'
 import MainContent from '@/components/MainContent'
@@ -10,8 +10,65 @@ type Phase = 'lock' | 'unlocked' | 'bouquet' | 'transition' | 'main'
 
 export default function Home() {
   const [phase, setPhase] = useState<Phase>('lock')
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const musicStartedRef = useRef(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  const startMusic = useCallback(() => {
+    if (musicStartedRef.current) return
+    musicStartedRef.current = true
+
+    const audio = new Audio('/music.mp3')
+    audio.loop = true
+    audio.volume = 0.5
+    audioRef.current = audio
+    audio.play().catch(() => {
+      // Autoplay might be blocked, will retry on next interaction
+      musicStartedRef.current = false
+    })
+  }, [])
+
+  // Auto-scroll slowly when main content appears
+  useEffect(() => {
+    if (phase !== 'main') return
+
+    // Wait for content to render
+    const startDelay = setTimeout(() => {
+      const scrollSpeed = 1.2 // pixels per frame (~60fps)
+      let animationId: number
+
+      const smoothScroll = () => {
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight
+        if (window.scrollY < maxScroll) {
+          window.scrollBy(0, scrollSpeed)
+          animationId = requestAnimationFrame(smoothScroll)
+        }
+      }
+
+      animationId = requestAnimationFrame(smoothScroll)
+
+      // Stop auto-scroll if user manually scrolls or touches
+      const stopScroll = () => {
+        cancelAnimationFrame(animationId)
+      }
+
+      window.addEventListener('wheel', stopScroll, { once: true })
+      window.addEventListener('touchstart', stopScroll, { once: true })
+
+      return () => {
+        cancelAnimationFrame(animationId)
+        window.removeEventListener('wheel', stopScroll)
+        window.removeEventListener('touchstart', stopScroll)
+      }
+    }, 2000) // Wait 2s for content to fully appear
+
+    return () => clearTimeout(startDelay)
+  }, [phase])
 
   const handleUnlock = () => {
+    // Ensure music is playing
+    startMusic()
+
     // Step 1: Lock screen success glow (short moment)
     setPhase('unlocked')
 
@@ -38,7 +95,8 @@ export default function Home() {
 
   return (
     <motion.div
-      className="min-h-screen w-full relative overflow-hidden"
+      ref={scrollContainerRef}
+      className={`min-h-screen w-full relative ${phase === 'main' ? 'overflow-auto' : 'overflow-hidden'}`}
       animate={{
         background: isNight ? nightGradient : dawnGradient,
       }}
@@ -71,7 +129,7 @@ export default function Home() {
             exit={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
             transition={{ duration: 1.2, ease: 'easeInOut' }}
           >
-            <LockScreen onUnlock={handleUnlock} />
+            <LockScreen onUnlock={handleUnlock} onFirstInteraction={startMusic} />
           </motion.div>
         )}
 
@@ -130,3 +188,4 @@ export default function Home() {
     </motion.div>
   )
 }
+
