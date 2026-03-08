@@ -45,9 +45,9 @@ export default function TypewriterMessage() {
   useEffect(() => {
     if (phase !== 'showing') return
 
-    const t1 = setTimeout(() => setPhase('strikethrough'), 20000)
-    const t2 = setTimeout(() => setPhase('fading'), 21500)
-    const t3 = setTimeout(() => setPhase('replaced'), 22500)
+    const t1 = setTimeout(() => setPhase('strikethrough'), 0)
+    const t2 = setTimeout(() => setPhase('fading'), 1500)
+    const t3 = setTimeout(() => setPhase('replaced'), 2500)
 
     return () => {
       clearTimeout(t1)

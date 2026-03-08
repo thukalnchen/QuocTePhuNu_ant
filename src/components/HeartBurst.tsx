@@ -108,8 +108,9 @@ export default function HeartBurst() {
               transition={{ duration: 0.6 }}
             >
               {clickCount === 1 && '💕 Em từng là tất cả...'}
-              {clickCount === 2 && '💗 Nhưng giờ thì...'}
-              {clickCount >= 3 && '💖 Không còn là gì nữa rồi!, disgusting!'}
+              {clickCount === 2 && ' Nhưng giờ thì...'}
+              {clickCount >= 3 && ' Thích chạm thế cơ à. đừng chạm nữa !'}
+              {clickCount >= 4 && ' Thích chạm thế cơ à. đừng chạm nữa !'}
             </motion.p>
 
             {/* Floating "chạm lần nữa đi" hint - only for click 1 and 2 */}
