@@ -109,7 +109,7 @@ export default function HeartBurst() {
             >
               {clickCount === 1 && '💕 Em từng là tất cả...'}
               {clickCount === 2 && ' Nhưng giờ thì...'}
-              {clickCount >= 3 && ' Thích chạm thế cơ à. đừng chạm nữa !'}
+              {clickCount >= 3 && ' Thích chạm thế cơ à. đừng chạm nữa, disgusting !'}
               {clickCount >= 4 && ' Thích chạm thế cơ à. đừng chạm nữa !'}
             </motion.p>
 
