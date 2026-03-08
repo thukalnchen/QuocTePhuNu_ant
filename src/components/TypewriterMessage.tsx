@@ -13,9 +13,11 @@ export default function TypewriterMessage() {
   const [isTyping, setIsTyping] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
   const [isStruck, setIsStruck] = useState(false)
-  const [phase, setPhase] = useState<'typing' | 'showing' | 'fading' | 'replaced'>('typing')
+  const [phase, setPhase] = useState<'typing' | 'fading' | 'replaced'>('typing')
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, amount: 0.5 })
+  const fadingTimer = useRef<ReturnType<typeof setTimeout>>()
+  const replacedTimer = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
     if (isInView && !hasStarted) {
@@ -33,27 +35,24 @@ export default function TypewriterMessage() {
         setDisplayedText(message.slice(0, index + 1))
         index++
       } else {
+        clearInterval(interval)
         setIsTyping(false)
         setIsStruck(true)
-        setPhase('showing')
-        clearInterval(interval)
+        fadingTimer.current = setTimeout(() => setPhase('fading'), 3000)
+        replacedTimer.current = setTimeout(() => setPhase('replaced'), 4000)
       }
     }, 60)
 
     return () => clearInterval(interval)
   }, [isTyping])
 
+  // Cleanup timers on unmount
   useEffect(() => {
-    if (phase !== 'showing') return
-
-    const t1 = setTimeout(() => setPhase('fading'), 3000)
-    const t2 = setTimeout(() => setPhase('replaced'), 4000)
-
     return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
+      clearTimeout(fadingTimer.current)
+      clearTimeout(replacedTimer.current)
     }
-  }, [phase])
+  }, [])
 
   return (
     <motion.div
